@@ -30,7 +30,7 @@ Datum phash_hamming(PG_FUNCTION_ARGS) {
     int32 distance;
     
     // Prevent null pointers, which will cause segfault
-    if (PG_GETARG_DATUM(0) == 0x00 || PG_GETARG_DATUM(1) == 0x00) {
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1)) {
         PG_RETURN_NULL();
     }
 
@@ -43,11 +43,11 @@ Datum phash_hamming(PG_FUNCTION_ARGS) {
     size2 = VARSIZE(ptr2) - VARHDRSZ;
 
     // Extract content to new memory space
-    varchar1 = malloc(sizeof (char) * (size1 + 1));
+    varchar1 = palloc(sizeof (char) * (size1 + 1));
     memcpy(varchar1, (void*) VARDATA(ptr1), size1);
     varchar1[size1] = '\0';
 
-    varchar2 = malloc(sizeof (char) * (size2 + 1));
+    varchar2 = palloc(sizeof (char) * (size2 + 1));
     memcpy(varchar2, (void*) VARDATA(ptr2), size2);
     varchar2[size2] = '\0';
 
@@ -55,8 +55,8 @@ Datum phash_hamming(PG_FUNCTION_ARGS) {
     long1 = strtoull(varchar1, NULL, 10);
     long2 = strtoull(varchar2, NULL, 10);
 
-    free(varchar1);
-    free(varchar2);
+    pfree(varchar1);
+    pfree(varchar2);
 
     // Compute hamming distance
     distance = ph_hamming_distance(long1, long2);
